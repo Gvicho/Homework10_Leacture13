@@ -1,23 +1,16 @@
 package com.example.homework10_leacture13
 
 import android.graphics.Color
-import android.opengl.Visibility
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.homework10_leacture13.databinding.ItemProfileComponentBinding
 
-class RecyclerComponentAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    companion object{
-        const val Item_Type_1 = 1
-        const val Item_Type_2 = 2
-        const val Item_Type_3 = 3
-    }
-
+class RecyclerComponentAdapter: ListAdapter<Component, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
+    // There was no need for three viewHolders, but I just wanted to have a template for multytype items recycler adapter
     inner class ComponentViewHolder(private val binding: ItemProfileComponentBinding):RecyclerView.ViewHolder(binding.root){
 
         fun bind(component: Component){
@@ -91,31 +84,30 @@ class RecyclerComponentAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>() 
     }
 
     override fun getItemViewType(position: Int): Int {
-        if(differ.currentList[position].type == Item_Type_1){
-            return Item_Type_1
-        }else if(differ.currentList[position].type == Item_Type_2){
-            return Item_Type_2
-        }else{
-            return Item_Type_3
+        val item = getItem(position)
+        return when (item.type) {
+            Item_Type_1 -> Item_Type_1
+            Item_Type_2 -> Item_Type_2
+            else -> Item_Type_3
         }
     }
 
-    private val differCallback = object : DiffUtil.ItemCallback<Component>() {
+    companion object {
+        const val Item_Type_1 = 1
+        const val Item_Type_2 = 2
+        const val Item_Type_3 = 3
 
-        override fun areItemsTheSame(oldItem: Component, newItem: Component): Boolean {
-            return oldItem.id == newItem.id
-        }
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Component>() {
+            override fun areItemsTheSame(oldItem: Component, newItem: Component): Boolean {
+                return oldItem.id == newItem.id
+            }
 
-        override fun areContentsTheSame(oldItem: Component, newItem: Component): Boolean {
-            return oldItem == newItem
+            override fun areContentsTheSame(oldItem: Component, newItem: Component): Boolean {
+                return oldItem == newItem
+            }
         }
     }
 
-    private val differ = AsyncListDiffer(this, differCallback)
-
-    fun submitList(list: MutableList<Component>) {
-        differ.submitList(list)
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):RecyclerView.ViewHolder{
         if(viewType == Item_Type_1){
@@ -136,12 +128,11 @@ class RecyclerComponentAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>() 
         }
     }
 
-    override fun getItemCount(): Int = differ.currentList.size
-
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if(holder is ComponentViewHolder)holder.bind(differ.currentList[position])
-        else if(holder is ComponentViewHolder1)holder.bind(differ.currentList[position])
-        else if(holder is ComponentViewHolder2)holder.bind(differ.currentList[position])
+        val component = getItem(position)
+        if(holder is ComponentViewHolder)holder.bind(component)
+        else if(holder is ComponentViewHolder1)holder.bind(component)
+        else if(holder is ComponentViewHolder2)holder.bind(component)
     }
 
 }
